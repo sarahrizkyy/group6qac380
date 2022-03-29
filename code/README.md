@@ -115,7 +115,24 @@ freq(myData$VEG_DARK_GREEN)
 
 frequency(myData$nutrition)
 
-#Univariate Graphs (Start Plotting by Variables)#
+#Univariate Graphs (Start Plotting by Variables -- Change Colours!)#
+ggplot(data=subset(myData, !is.na(education)))+
+  geom_bar(aes(x=education))+ xlab("Education Level") + ylab("Counts")
+  
+ggplot(data=subset(myData, !is.na(age)))+
+  geom_histogram(aes(x=age),binwidth = 1)+ xlab("Age") + ylab("Counts")
+  
+ggplot(data=subset(myData, !is.na(GENDER)))+
+  geom_bar(aes(x=GENDER))+ xlab("Gender") + ylab("Counts")
+
+ggplot(data=subset(myData, !is.na(house_income)))+
+  geom_bar(aes(x=house_income))+ xlab("Household Income") + ylab("Counts")
+
+ggplot(data=subset(myData, !is.na(scores_sum)))+
+  geom_histogram(aes(x=scores_sum),binwidth = 1)+ xlab("Food Insecurity Scores") + ylab("Counts")
+
+ggplot(data=subset(myData, !is.na(nutrition)))+
+  geom_bar(aes(x=nutrition))+ xlab("Nutrition Level") + ylab("Counts")
 
 
 
