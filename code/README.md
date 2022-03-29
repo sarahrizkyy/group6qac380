@@ -1,0 +1,138 @@
+#Loading Necessary Libraries#
+library(ggplot2)
+library(descr)
+library(dplyr)
+library(readxl)
+
+#Loading Up Data Set#
+myData <- read_excel("Edited_FOTM Survey Data.xlsx")
+
+#Data Management on Variables of Interest: Education#
+myData$education<-NA
+myData$education[myData$EDIT_SCHOOL_LEVEL=="LESS THAN HIGH SCHOOL DEGREE"] <- "Less than High School"
+myData$education[myData$EDIT_SCHOOL_LEVEL=="HIGH SCHOOL DEGREE OR EQUIVALENT (e.g. GED)"] <- "High School Degree"
+myData$education[myData$EDIT_SCHOOL_LEVEL=="COLLEGE DEGREE OR MORE"] <- "College Degree or More"
+myData$education[myData$EDIT_SCHOOL_LEVEL=="DON'T KNOW"] <- NA
+
+freq(as.ordered(myData$education))
+
+#Data Management on Variables of Interest: Age#
+myData$dates <- as.POSIXct(myData$StartDate, format = "%m/%d/%Y %H:%M:%S")
+myData$dates <- format(myData$dates, format="%Y")
+myData$dates <- as.numeric(myData$dates)
+myData$YOB <- as.numeric(myData$YOB)
+myData$age <- myData$dates - myData$YOB
+
+freq(as.ordered(myData$age))
+summary(myData$age)
+mean(myData$age, na.rm = TRUE)
+sd(myData$age, na.rm = TRUE)
+
+#Data Management on Variables of Interest: Education#
+freq(as.ordered(myData$GENDER))
+
+#Data Management on Variables of Interest: Household Income#
+myData$house_income <- NA
+myData$house_income[myData$HHLD_INCOME1=="YES"|
+                    myData$HHLD_INCOME2=="YES"|
+                    myData$HHLD_INCOME3=="YES"|
+                    myData$HHLD_INCOME4=="YES"|
+                    myData$HHLD_INCOME5=="YES"|
+                    myData$HHLD_INCOME6=="YES"] <- NA
+
+myData$house_income[myData$HHLD_INCOME1=="DON'T KNOW"|
+                    myData$HHLD_INCOME2=="DON'T KNOW"|
+                    myData$HHLD_INCOME3=="DON'T KNOW"|
+                    myData$HHLD_INCOME4=="DON'T KNOW"|
+                    myData$HHLD_INCOME5=="DON'T KNOW"|
+                    myData$HHLD_INCOME6=="DON'T KNOW"] <- NA
+                    
+myData$house_income[myData$HHLD_INCOME1=="NO"] <- "<30,000"
+myData$house_income[myData$HHLD_INCOME2=="NO"] <- "30,000-40,000"
+myData$house_income[myData$HHLD_INCOME3=="NO"] <- "40,000-51,000"
+myData$house_income[myData$HHLD_INCOME4=="NO"] <- "51,000-61,000"
+myData$house_income[myData$HHLD_INCOME5=="NO"] <- "61,000-71,000"
+myData$house_income[myData$HHLD_INCOME5=="NO"] <- "71,000-166,000"
+
+freq(as.ordered(myData$house_income))
+
+#Data Management on Variables of Interest: Food Insecurity#
+#Consists of FOOD_DIDNT_LAST, BALANCED_MEALS, SKIP_MEALS, OFTEN_SKIP_MEALS, EAT_LESS, HUNGRY which have slightly different values#
+#will be scoring each question and summing them up together#
+
+myData$scores1<-NA
+myData$scores1[myData$FOOD_DIDNT_LAST=="DON'T KNOW" | myData$FOOD_DIDNT_LAST=="REFUSED"] <-NA
+myData$scores1[myData$FOOD_DIDNT_LAST=="Never true for you in the last 12 months"]<-0
+myData$scores1[myData$FOOD_DIDNT_LAST=="Sometimes, or"]<-1
+myData$scores1[myData$FOOD_DIDNT_LAST=="Often"]<-2
+myData$scores1<-as.numeric(myData$scores1)
+
+myData$scores2<-NA
+myData$scores2[myData$BALANCED_MEALS=="DON'T KNOW" | myData$BALANCED_MEALS=="REFUSED"] <-NA
+myData$scores2[myData$BALANCED_MEALS=="Never true for you in the last 12 months"]<-0
+myData$scores2[myData$BALANCED_MEALS=="Sometimes, or"]<-1
+myData$scores2[myData$BALANCED_MEALS=="Often"]<-2
+myData$scores2<-as.numeric(myData$scores2)
+
+myData$scores3<-NA
+myData$scores3[myData$SKIP_MEALS=="DON'T KNOW" | myData$SKIP_MEALS=="REFUSED" |
+                              myData$OFTEN_SKIP_MEALS=="DON'T KNOW" | myData$OFTEN_SKIP_MEALS=="REFUSED"] <-NA
+myData$scores3[myData$SKIP_MEALS=="NO"]<-0
+myData$scores3[myData$SKIP_MEALS=="YES" & myData$OFTEN_SKIP_MEALS=="Only 1 or 2 months"]<-1
+myData$scores3[myData$SKIP_MEALS=="YES" & myData$OFTEN_SKIP_MEALS=="Some months but not every month, or"]<-1
+myData$scores3[myData$SKIP_MEALS=="YES" & myData$OFTEN_SKIP_MEALS=="Almost every month"]<-2
+myData$scores3<-as.numeric(myData$scores3)
+
+myData$scores4<-NA
+myData$scores4[myData$EAT_LESS=="DON'T KNOW" | myData$EAT_LESS=="REFUSED"] <-NA
+myData$scores4[myData$EAT_LESS=="NO"]<-0
+myData$scores4[myData$EAT_LESS=="YES"]<-1
+myData$scores4<-as.numeric(myData$scores4)
+
+myData$scores5<-NA
+myData$scores5[myData$HUNGRY=="DON'T KNOW" | myData$HUNGRY=="REFUSED"] <-NA
+myData$scores5[myData$HUNGRY=="NO"]<-0
+myData$scores5[myData$HUNGRY=="YES"]<-1
+myData$scores5<-as.numeric(myData$scores5)
+
+myData$scores_sum<-NA
+myData$scores_sum<-myData$scores1+myData$scores2+myData$scores3+myData$scores4+myData$scores5
+
+freq(as.ordered((myData$scores_sum))
+summary(myData$scores_sum)
+mean(myData$scores_sum, na.rm = TRUE)
+sd(myData$scores_sum, na.rm = TRUE)
+
+#Data Management on Variables of Interest: Nutrition (Check)#
+myData$nutrition[myData$VEG_DARK_GREEN == 'NEVER'| myData$VEG_DARK_GREEN =='Per month' & myData$FRUIT=='NEVER'| myData$VEG_DARK_GREEN =='Per month' &myData$VEG_ORANGE == 'NEVER'| myData$VEG_DARK_GREEN =='Per month']<- 'low' 
+      
+myData$nutrition[myData$VEG_DARK_GREEN == 'Per week' & myData$FRUIT=='Per week' &myData$VEG_ORANGE == 'Per week']<-'medium'
+
+myData$nutrition[myData$VEG_DARK_GREEN == 'Per day' & myData$FRUIT=='Per day' &myData$VEG_ORANGE == 'Per day']<- 'high'
+myData$nutritionL<-factor(myData$nutrition, levels=c("low","medium", "high"))
+
+freq(as.ordered(myData$nutrition))
+
+#Univariate Graphs (Start Plotting by Variables -- Change Colours!)#
+ggplot(data=subset(myData, !is.na(education)))+
+  geom_bar(aes(x=education))+ xlab("Education Level") + ylab("Counts")
+  
+ggplot(data=subset(myData, !is.na(age)))+
+  geom_histogram(aes(x=age),binwidth = 1)+ xlab("Age") + ylab("Counts")
+  
+ggplot(data=subset(myData, !is.na(GENDER)))+
+  geom_bar(aes(x=GENDER))+ xlab("Gender") + ylab("Counts")
+
+ggplot(data=subset(myData, !is.na(house_income)))+
+  geom_bar(aes(x=house_income))+ xlab("Household Income") + ylab("Counts")
+
+ggplot(data=subset(myData, !is.na(scores_sum)))+
+  geom_histogram(aes(x=scores_sum),binwidth = 1)+ xlab("Food Insecurity Scores") + ylab("Counts")
+
+ggplot(data=subset(myData, !is.na(nutrition)))+
+  geom_bar(aes(x=nutrition))+ xlab("Nutrition Level") + ylab("Counts")
+
+
+
+
+
