@@ -109,11 +109,9 @@ myData$nutrition[myData$VEG_DARK_GREEN == 'NEVER'| myData$VEG_DARK_GREEN =='Per 
 myData$nutrition[myData$VEG_DARK_GREEN == 'Per week' & myData$FRUIT=='Per week' &myData$VEG_ORANGE == 'Per week']<-'medium'
 
 myData$nutrition[myData$VEG_DARK_GREEN == 'Per day' & myData$FRUIT=='Per day' &myData$VEG_ORANGE == 'Per day']<- 'high'
+myData$nutritionL<-factor(myData$nutrition, levels=c("low","medium", "high"))
 
-freq(myData$nutrition)
-freq(myData$VEG_DARK_GREEN)
-
-frequency(myData$nutrition)
+freq(as.ordered(myData$nutrition))
 
 #Univariate Graphs (Start Plotting by Variables -- Change Colours!)#
 ggplot(data=subset(myData, !is.na(education)))+
