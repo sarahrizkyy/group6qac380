@@ -3,6 +3,11 @@ library(ggplot2)
 library(descr)
 library(dplyr)
 library(readxl)
+library(devtools)
+#For those without ggthemr, install_github('cttobin/ggthemr')
+library(ggthemr)
+ggthemr("dust")
+library(ggplot2)
 
 #Loading Up Data Set#
 myData <- read_excel("Edited_FOTM Survey Data.xlsx")
@@ -98,39 +103,88 @@ myData$scores5<-as.numeric(myData$scores5)
 myData$scores_sum<-NA
 myData$scores_sum<-myData$scores1+myData$scores2+myData$scores3+myData$scores4+myData$scores5
 
-freq(as.ordered((myData$scores_sum))
+freq(as.ordered(myData$scores_sum))
 summary(myData$scores_sum)
 mean(myData$scores_sum, na.rm = TRUE)
 sd(myData$scores_sum, na.rm = TRUE)
 
 #Data Management on Variables of Interest: Nutrition (Check)#
-myData$nutrition[myData$VEG_DARK_GREEN == 'NEVER'| myData$VEG_DARK_GREEN =='Per month' & myData$FRUIT=='NEVER'| myData$VEG_DARK_GREEN =='Per month' &myData$VEG_ORANGE == 'NEVER'| myData$VEG_DARK_GREEN =='Per month']<- 'low' 
+myData$nutrition[myData$VEG_DARK_GREEN == 'NEVER'| myData$VEG_DARK_GREEN =='Per month' & myData$FRUIT=='NEVER'| myData$VEG_DARK_GREEN =='Per month' &myData$VEG_ORANGE == 'NEVER'| myData$VEG_DARK_GREEN =='Per month']<- 'Low' 
       
-myData$nutrition[myData$VEG_DARK_GREEN == 'Per week' & myData$FRUIT=='Per week' &myData$VEG_ORANGE == 'Per week']<-'medium'
+myData$nutrition[myData$VEG_DARK_GREEN == 'Per week' & myData$FRUIT=='Per week' &myData$VEG_ORANGE == 'Per week']<-'Medium'
 
-myData$nutrition[myData$VEG_DARK_GREEN == 'Per day' & myData$FRUIT=='Per day' &myData$VEG_ORANGE == 'Per day']<- 'high'
-myData$nutritionL<-factor(myData$nutrition, levels=c("low","medium", "high"))
+myData$nutrition[myData$VEG_DARK_GREEN == 'Per day' & myData$FRUIT=='Per day' &myData$VEG_ORANGE == 'Per day']<- 'High'
+myData$nutrition<-factor(myData$nutrition, levels=c("Low","Medium", "High"))
 
 freq(as.ordered(myData$nutrition))
 
-#Univariate Graphs (Start Plotting by Variables -- Change Colours!)#
+#Univariate Graphs#
 ggplot(data=subset(myData, !is.na(education)))+
-  geom_bar(aes(x=education))+ xlab("Education Level") + ylab("Counts")
+  geom_bar(aes(x=education))+ 
+  xlab("Education Level") + ylab("Counts") + ggtitle("Education Level Distribution")
   
 ggplot(data=subset(myData, !is.na(age)))+
-  geom_histogram(aes(x=age),binwidth = 1)+ xlab("Age") + ylab("Counts")
+  geom_histogram(aes(x=age),binwidth = 1) + 
+  xlab("Age") + ylab("Counts") + ggtitle("Age Distribution")
   
 ggplot(data=subset(myData, !is.na(GENDER)))+
-  geom_bar(aes(x=GENDER))+ xlab("Gender") + ylab("Counts")
+  geom_bar(aes(x=GENDER))+ 
+  xlab("Gender") + ylab("Counts") + ggtitle("Gender Distribution") 
 
 ggplot(data=subset(myData, !is.na(house_income)))+
-  geom_bar(aes(x=house_income))+ xlab("Household Income") + ylab("Counts")
+  geom_bar(aes(x=house_income))+ 
+  xlab("Household Income") + ylab("Counts") + ggtitle("Household Income Distribution") +
+  coord_flip()
 
 ggplot(data=subset(myData, !is.na(scores_sum)))+
-  geom_histogram(aes(x=scores_sum),binwidth = 1)+ xlab("Food Insecurity Scores") + ylab("Counts")
+  geom_density(aes(x=scores_sum))+ 
+  xlab("Food Insecurity Scores") + ylab("Counts") + ggtitle("Food Insecurity Scores Density")
 
 ggplot(data=subset(myData, !is.na(nutrition)))+
-  geom_bar(aes(x=nutrition))+ xlab("Nutrition Level") + ylab("Counts")
+  geom_bar(aes(x=nutrition))+ 
+  xlab("Nutrition Level") + ylab("Counts") + ggtitle("Nutrition Level Distribution")
+  
+#Bivariate Graphs#
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(house_income)))+
+  geom_bar(aes(x = nutrition, fill = house_income), position="stack")+
+  labs(y = "Counts", 
+       fill = "Household Income",
+       x = "Nutrition Level",
+       title = "Nutrition Level by Household Income")
+
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(education)))+
+  geom_bar(aes(x = nutrition, fill = education), position="stack")+
+  labs(y = "Counts", 
+       fill = "Education Level",
+       x = "Nutrition Level",
+       title = "Nutrition Level by Education Level")
+
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(GENDER)))+
+  geom_bar(aes(x = nutrition, fill = GENDER), position="stack")+
+  labs(y = "Counts", 
+       fill = "Gender",
+       x = "Nutrition Level",
+       title = "Nutrition Level by Gender")
+
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(scores_sum)))+
+  geom_density(aes(x = scores_sum, fill = nutrition), alpha=0.4)+
+  labs(y = "Density", 
+       fill = "Nutrition Level",
+       x = "Food Insecurity Scores",
+       title = "Food Insecurity Scores Density by Nutrition Level")
+
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(age)))+
+  geom_density(aes(x = age, fill = nutrition), alpha=0.4)+
+  labs(y = "Density", 
+       fill = "Nutrition Level",
+       x = "Age",
+       title = "Age Density by Nutrition Level")
+
+
+       
+
+
+
 
 
 
