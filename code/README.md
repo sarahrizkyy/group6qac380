@@ -190,13 +190,3 @@ ggplot(data=subset(myData, !is.na(nutrition) & !is.na(age)))+
        x = "Age",
        title = "Age Density by Nutrition Level")
 
-
-       
-
-
-
-
-
-
-
-
