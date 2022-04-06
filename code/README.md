@@ -155,13 +155,6 @@ ggplot(data=subset(myData, !is.na(nutrition)))+
   xlab("Nutrition Level") + ylab("Counts") + ggtitle("Nutrition Level Distribution")
   
 #Bivariate Graphs#
-ggplot(data=subset(myData, !is.na(nutrition) & !is.na(house_income)))+
-  geom_bar(aes(x = nutrition, fill = house_income), position="stack")+
-  labs(y = "Counts", 
-       fill = "Household Income",
-       x = "Nutrition Level",
-       title = "Nutrition Level by Household Income")
-
 ggplot(data=subset(myData, !is.na(nutrition) & !is.na(education)))+
   geom_bar(aes(x = nutrition, fill = education), position="stack")+
   labs(y = "Counts", 
@@ -194,8 +187,17 @@ ggplot(data=subset(myData, !is.na(nutrition) & !is.na(scores_sum)))+
        x = "Food Insecurity Scores",
        title = "Food Insecurity Scores and Nutrition")
 
+#Bivariate Analysis: Household Income Scores#
+myAnovaResults_income <- aov(nutrition ~ house_income, data = myData) 
+summary(myAnovaResults_income)
+TukeyHSD(myAnovaResults_income)
 
-       
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(house_income)))+
+  geom_bar(aes(x = nutrition, fill = house_income), position="stack")+
+  labs(y = "Counts", 
+       fill = "Household Income",
+       x = "Nutrition Level",
+       title = "Nutrition Level by Household Income")
 
 
 
