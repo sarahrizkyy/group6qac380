@@ -34,6 +34,7 @@ mean(myData$age, na.rm = TRUE)
 sd(myData$age, na.rm = TRUE)
 
 #Data Management on Variables of Interest: Education#
+myData$GENDER[myData$GENDER=="Genderqueer or Non-Binary"] <- NA
 freq(as.ordered(myData$GENDER))
 
 #Data Management on Variables of Interest: Household Income#
@@ -108,15 +109,24 @@ summary(myData$scores_sum)
 mean(myData$scores_sum, na.rm = TRUE)
 sd(myData$scores_sum, na.rm = TRUE)
 
-#Data Management on Variables of Interest: Nutrition (Check)#
-myData$nutrition[myData$VEG_DARK_GREEN == 'NEVER'| myData$VEG_DARK_GREEN =='Per month' & myData$FRUIT=='NEVER'| myData$VEG_DARK_GREEN =='Per month' &myData$VEG_ORANGE == 'NEVER'| myData$VEG_DARK_GREEN =='Per month']<- 'Low' 
-      
-myData$nutrition[myData$VEG_DARK_GREEN == 'Per week' & myData$FRUIT=='Per week' &myData$VEG_ORANGE == 'Per week']<-'Medium'
+#Data Management on Variables of Interest: Nutrition Proxied by Dark Veggies Intake#
+myData$nutrition_day<-NA
+myData$nutrition_day<-(myData$VEG_DARK_GREEN_0_TEXT)* 7 * 4
+myData$nutrition_day[is.na(myData$nutrition_day) == TRUE]<-0
 
-myData$nutrition[myData$VEG_DARK_GREEN == 'Per day' & myData$FRUIT=='Per day' &myData$VEG_ORANGE == 'Per day']<- 'High'
-myData$nutrition<-factor(myData$nutrition, levels=c("Low","Medium", "High"))
+myData$nutrition_week<-NA
+myData$nutrition_week<-(myData$VEG_DARK_GREEN_1_TEXT) * 4
+myData$nutrition_week[is.na(myData$nutrition_week) == TRUE]<-0
 
-freq(as.ordered(myData$nutrition))
+myData$nutrition_month<-NA
+myData$nutrition_month<-(myData$VEG_DARK_GREEN_2_TEXT) * 1
+myData$nutrition_month[is.na(myData$nutrition_month) == TRUE]<-0
+
+myData$nutrition<-NA
+myData$nutrition<-myData$nutrition_day + myData$nutrition_week + myData$nutrition_month
+myData$nutrition[myData$VEG_DARK_GREEN=="DON'T KNOW" | myData$VEG_DARK_GREEN=="REFUSED"] <- NA
+myData$nutrition[myData$VEG_DARK_GREEN=="NEVER"] <- 0
+
 
 #Univariate Graphs#
 ggplot(data=subset(myData, !is.na(education)))+
