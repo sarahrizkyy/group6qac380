@@ -191,12 +191,11 @@ ggplot(data=subset(myData, !is.na(nutrition) & !is.na(scores_sum)))+
 myAnovaResults_income <- aov(nutrition ~ house_income, data = myData) 
 summary(myAnovaResults_income)
 TukeyHSD(myAnovaResults_income)
-
+       
 ggplot(data=subset(myData, !is.na(nutrition) & !is.na(house_income)))+
-  geom_bar(aes(x = nutrition, fill = house_income), position="stack")+
-  labs(y = "Counts", 
-       fill = "Household Income",
-       x = "Nutrition Level",
+  stat_summary(aes(x=house_income, y=nutrition), fun=mean, geom="bar")+
+  labs(y = "Nutrition",
+       x = "Household Income",
        title = "Nutrition Level by Household Income")
 
 
