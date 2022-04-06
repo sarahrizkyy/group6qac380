@@ -33,7 +33,7 @@ summary(myData$age)
 mean(myData$age, na.rm = TRUE)
 sd(myData$age, na.rm = TRUE)
 
-#Data Management on Variables of Interest: Education#
+#Data Management on Variables of Interest: Gender#
 myData$GENDER[myData$GENDER=="Genderqueer or Non-Binary"] <- NA
 freq(as.ordered(myData$GENDER))
 
@@ -176,19 +176,23 @@ ggplot(data=subset(myData, !is.na(nutrition) & !is.na(GENDER)))+
        x = "Nutrition Level",
        title = "Nutrition Level by Gender")
 
-ggplot(data=subset(myData, !is.na(nutrition) & !is.na(scores_sum)))+
-  geom_density(aes(x = scores_sum, fill = nutrition), alpha=0.4)+
-  labs(y = "Density", 
-       fill = "Nutrition Level",
-       x = "Food Insecurity Scores",
-       title = "Food Insecurity Scores Density by Nutrition Level")
-
 ggplot(data=subset(myData, !is.na(nutrition) & !is.na(age)))+
   geom_density(aes(x = age, fill = nutrition), alpha=0.4)+
   labs(y = "Density", 
        fill = "Nutrition Level",
        x = "Age",
        title = "Age Density by Nutrition Level")
+       
+
+#Bivariate Analysis: Food Insecurity Scores#
+cor.test(myData$nutrition, myData$scores_sum)
+
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(scores_sum)))+
+   geom_point(aes(x=scores_sum, y=nutrition))+
+   geom_smooth(aes(x=scores_sum, y=nutrition), method="lm") +
+     labs(y = "Nutrition",
+       x = "Food Insecurity Scores",
+       title = "Food Insecurity Scores and Nutrition")
 
 
        
