@@ -190,3 +190,15 @@ ggplot(data=subset(myData, !is.na(nutrition) & !is.na(age)))+
        x = "Age",
        title = "Age Density by Nutrition Level")
 
+
+
+# Education on Nutrition Analysis       
+myAnovaResults <- aov(myData$nutrition ~ myData$education, data = myData) 
+  summary(myAnovaResults)
+
+  # for post-hoc test
+  myAnovaResults <- aov(QuantResponseVar ~ CategExplanatoryVar, data = myData) 
+    TukeyHSD(myAnovaResults)
+
+
+
