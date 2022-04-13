@@ -19,6 +19,10 @@ myData$education[myData$EDIT_SCHOOL_LEVEL=="HIGH SCHOOL DEGREE OR EQUIVALENT (e.
 myData$education[myData$EDIT_SCHOOL_LEVEL=="COLLEGE DEGREE OR MORE"] <- "College Degree or More"
 myData$education[myData$EDIT_SCHOOL_LEVEL=="DON'T KNOW"] <- NA
 
+myData$education<-factor(myData$education, levels=c("Less than High School",
+                                                            "High School Degree",
+                                                            "College Degree or More"))
+
 freq(as.ordered(myData$education))
 
 #Data Management on Variables of Interest: Age#
@@ -33,7 +37,7 @@ summary(myData$age)
 mean(myData$age, na.rm = TRUE)
 sd(myData$age, na.rm = TRUE)
 
-#Data Management on Variables of Interest: Education#
+#Data Management on Variables of Interest: Gender#
 myData$GENDER[myData$GENDER=="Genderqueer or Non-Binary"] <- NA
 freq(as.ordered(myData$GENDER))
 
@@ -152,53 +156,145 @@ ggplot(data=subset(myData, !is.na(scores_sum)))+
 
 ggplot(data=subset(myData, !is.na(nutrition)))+
   geom_bar(aes(x=nutrition))+ 
-  xlab("Nutrition Level") + ylab("Counts") + ggtitle("Nutrition Level Distribution")
+  xlab("Nutrition Scores") + ylab("Counts") + ggtitle("Nutrition Scores Distribution")
   
-#Bivariate Graphs#
-ggplot(data=subset(myData, !is.na(nutrition) & !is.na(house_income)))+
-  geom_bar(aes(x = nutrition, fill = house_income), position="stack")+
-  labs(y = "Counts", 
-       fill = "Household Income",
-       x = "Nutrition Level",
-       title = "Nutrition Level by Household Income")
-
-ggplot(data=subset(myData, !is.na(nutrition) & !is.na(education)))+
-  geom_bar(aes(x = nutrition, fill = education), position="stack")+
-  labs(y = "Counts", 
-       fill = "Education Level",
-       x = "Nutrition Level",
-       title = "Nutrition Level by Education Level")
-
-ggplot(data=subset(myData, !is.na(nutrition) & !is.na(GENDER)))+
-  geom_bar(aes(x = nutrition, fill = GENDER), position="stack")+
-  labs(y = "Counts", 
-       fill = "Gender",
-       x = "Nutrition Level",
-       title = "Nutrition Level by Gender")
+  
+#Bivariate Analysis: Food Insecurity Scores#
+cor.test(myData$nutrition, myData$scores_sum)
 
 ggplot(data=subset(myData, !is.na(nutrition) & !is.na(scores_sum)))+
-  geom_density(aes(x = scores_sum, fill = nutrition), alpha=0.4)+
-  labs(y = "Density", 
-       fill = "Nutrition Level",
+   geom_point(aes(x=scores_sum, y=nutrition))+
+   geom_smooth(aes(x=scores_sum, y=nutrition), method="lm") +
+     labs(y = "Nutrition",
        x = "Food Insecurity Scores",
-       title = "Food Insecurity Scores Density by Nutrition Level")
+       title = "Food Insecurity Scores and Nutrition")
 
-ggplot(data=subset(myData, !is.na(nutrition) & !is.na(age)))+
-  geom_density(aes(x = age, fill = nutrition), alpha=0.4)+
-  labs(y = "Density", 
-       fill = "Nutrition Level",
-       x = "Age",
-       title = "Age Density by Nutrition Level")
+#Bivariate Analysis: Household Income#
+myAnovaResults_income <- aov(nutrition ~ house_income, data = myData) 
+summary(myAnovaResults_income)
+TukeyHSD(myAnovaResults_income)
+       
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(house_income)))+
+  stat_summary(aes(x=house_income, y=nutrition), fun=mean, geom="bar")+
+  labs(y = "Nutrition",
+       x = "Household Income",
+       title = "Nutrition Scores by Household Income")
+
+#Bivariate Analysis: Education Level#
+myAnovaResults_edu <- aov(nutrition ~ education, data = myData) 
+summary(myAnovaResults_edu)
+TukeyHSD(myAnovaResults_edu)
+       
+ggplot(data=subset(myData, !is.na(nutrition) & !is.na(education)))+
+  stat_summary(aes(x=education, y=nutrition), fun=mean, geom="bar")+
+  labs(y = "Nutrition",
+       x = "Education Level",
+       title = "Nutrition Scores by Education Level")
+
+#Multivariate Analysis#
+lm_proxy1<- lm(nutrition ~ factor(education) + age + factor(GENDER), data = myData) 
+summary(lm_proxy1)
+
+#####################################
+#ROBUSTNESS CHECK: FRUITS#
+#####################################
+
+myData$nutrition_day_fruits<-NA
+myData$nutrition_day_fruits<-(myData$FRUIT_0_TEXT)* 7 * 4
+myData$nutrition_day_fruits[is.na(myData$nutrition_day_fruits) == TRUE]<-0
+
+myData$nutrition_week_fruits<-NA
+myData$nutrition_week_fruits<-(myData$FRUIT_1_TEXT) * 4
+myData$nutrition_week_fruits[is.na(myData$nutrition_week_fruits) == TRUE]<-0
+
+myData$nutrition_month_fruits<-NA
+myData$nutrition_month_fruits<-(myData$FRUIT_2_TEXT) * 1
+myData$nutrition_month_fruits[is.na(myData$nutrition_month_fruits) == TRUE]<-0
+
+myData$nutrition_fr<-NA
+myData$nutrition_fr<-myData$nutrition_day_fruits + myData$nutrition_week_fruits + myData$nutrition_month_fruits
+myData$nutrition_fr[myData$FRUIT=="DON'T KNOW" | myData$FRUIT=="REFUSED"] <- NA
+myData$nutrition_fr[myData$FRUIT=="NEVER"] <- 0
+
+#The Analysis
+cor.test(myData$nutrition_fr, myData$scores_sum)
+
+myAnovaResults_income2 <- aov(nutrition_fr ~ house_income, data = myData) 
+summary(myAnovaResults_income2)
+TukeyHSD(myAnovaResults_income2)
+
+myAnovaResults_edu2 <- aov(nutrition_fr ~ education, data = myData) 
+summary(myAnovaResults_edu2)
+TukeyHSD(myAnovaResults_edu2)
+
+lm_proxy2<- lm(nutrition_fr ~ factor(house_income) + age + factor(GENDER), data = myData) 
+summary(lm_proxy2)
 
 
+#####################################
+#ROBUSTNESS CHECK: ORANGE VEGETABLES#
+#####################################
 
-# Education on Nutrition Analysis       
-myAnovaResults <- aov(myData$nutrition ~ myData$education, data = myData) 
-  summary(myAnovaResults)
+myData$nutrition_day_or<-NA
+myData$nutrition_day_or<-(myData$VEG_ORANGE_0_TEXT)* 7 * 4
+myData$nutrition_day_or[is.na(myData$nutrition_day_or) == TRUE]<-0
 
-  # for post-hoc test
-  myAnovaResults <- aov(QuantResponseVar ~ CategExplanatoryVar, data = myData) 
-    TukeyHSD(myAnovaResults)
+myData$nutrition_week_or<-NA
+myData$nutrition_week_or<-(myData$VEG_ORANGE_1_TEXT) * 4
+myData$nutrition_week_or[is.na(myData$nutrition_week_or) == TRUE]<-0
 
+myData$nutrition_month_or<-NA
+myData$nutrition_month_or<-(myData$VEG_ORANGE_2_TEXT) * 1
+myData$nutrition_month_or[is.na(myData$nutrition_month_or) == TRUE]<-0
 
+myData$nutrition_or<-NA
+myData$nutrition_or<-myData$nutrition_day_or + myData$nutrition_week_or + myData$nutrition_month_or
+myData$nutrition_or[myData$VEG_ORANGE=="DON'T KNOW" | myData$VEG_ORANGE=="REFUSED"] <- NA
+myData$nutrition_or[myData$VEG_ORANGE=="NEVER"] <- 0
+
+#The Analysis
+cor.test(myData$nutrition_or, myData$scores_sum)
+
+myAnovaResults_income3 <- aov(nutrition_or ~ house_income, data = myData) 
+summary(myAnovaResults_income3)
+TukeyHSD(myAnovaResults_income3)
+
+myAnovaResults_edu3 <- aov(nutrition_or ~ education, data = myData) 
+summary(myAnovaResults_edu3)
+TukeyHSD(myAnovaResults_edu3)
+
+lm_proxy3<- lm(nutrition_or ~ factor(education) + age + factor(GENDER), data = myData) 
+summary(lm_proxy3)
+
+#####################################
+#ROBUSTNESS CHECK: OTHER VEGETABLES#
+#####################################
+
+myData$nutrition_day_ot<-NA
+myData$nutrition_day_ot<-(myData$VEG_OTHER_0_TEXT)* 7 * 4
+myData$nutrition_day_ot[is.na(myData$nutrition_day_ot) == TRUE]<-0
+
+myData$nutrition_week_ot<-NA
+myData$nutrition_week_ot<-(myData$VEG_OTHER_1_TEXT) * 4
+myData$nutrition_week_ot[is.na(myData$nutrition_week_ot) == TRUE]<-0
+
+myData$nutrition_month_ot<-NA
+myData$nutrition_month_ot<-(myData$VEG_OTHER_2_TEXT) * 1
+myData$nutrition_month_ot[is.na(myData$nutrition_month_ot) == TRUE]<-0
+
+myData$nutrition_ot<-NA
+myData$nutrition_ot<-myData$nutrition_day_ot + myData$nutrition_week_ot + myData$nutrition_month_ot
+myData$nutrition_ot[myData$VEG_OTHER=="DON'T KNOW" | myData$VEG_OTHER=="REFUSED"] <- NA
+myData$nutrition_ot[myData$VEG_OTHER=="NEVER"] <- 0
+
+#The Analysis
+cor.test(myData$nutrition_ot, myData$scores_sum)
+
+myAnovaResults_income4 <- aov(nutrition_ot ~ house_income, data = myData) 
+summary(myAnovaResults_income4)
+TukeyHSD(myAnovaResults_income4)
+
+myAnovaResults_edu4 <- aov(nutrition_ot ~ education, data = myData) 
+summary(myAnovaResults_edu4)
+TukeyHSD(myAnovaResults_edu4)
 
