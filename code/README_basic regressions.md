@@ -197,7 +197,6 @@ ggplot(data=subset(myData, !is.na(nutrition) & !is.na(education)))+
 lm_proxy1<- lm(nutrition ~ factor(education) + age + factor(GENDER), data = myData) 
 summary(lm_proxy1)
 
-
 #####################################
 #ROBUSTNESS CHECK: FRUITS#
 #####################################
@@ -304,3 +303,7 @@ TukeyHSD(myAnovaResults_income4)
 myAnovaResults_edu4 <- aov(nutrition_ot ~ education, data = myData) 
 summary(myAnovaResults_edu4)
 TukeyHSD(myAnovaResults_edu4)
+<<<<<<< HEAD:code/README_basic regressions.md
+=======
+
+>>>>>>> 3ce8a9afc0fc84105a397742331a1e11b58ce9cf:code/README.md
