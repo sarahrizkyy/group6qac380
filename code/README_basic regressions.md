@@ -8,6 +8,7 @@ library(devtools)
 library(ggthemr)
 ggthemr("dust")
 library(ggplot2)
+library(tidyLPA)
 
 #Loading Up Data Set#
 myData <- read_excel("Edited_FOTM Survey Data.xlsx")
@@ -130,6 +131,7 @@ myData$nutrition<-NA
 myData$nutrition<-myData$nutrition_day + myData$nutrition_week + myData$nutrition_month
 myData$nutrition[myData$VEG_DARK_GREEN=="DON'T KNOW" | myData$VEG_DARK_GREEN=="REFUSED"] <- NA
 myData$nutrition[myData$VEG_DARK_GREEN=="NEVER"] <- 0
+myData$nutrition[myData$nutrition>28] <- 28
 
 
 #Univariate Graphs#
@@ -216,6 +218,7 @@ myData$nutrition_fr<-NA
 myData$nutrition_fr<-myData$nutrition_day_fruits + myData$nutrition_week_fruits + myData$nutrition_month_fruits
 myData$nutrition_fr[myData$FRUIT=="DON'T KNOW" | myData$FRUIT=="REFUSED"] <- NA
 myData$nutrition_fr[myData$FRUIT=="NEVER"] <- 0
+myData$nutrition_fr[myData$nutrition_fr>28] <- 28
 
 #The Analysis
 cor.test(myData$nutrition_fr, myData$scores_sum)
@@ -252,6 +255,7 @@ myData$nutrition_or<-NA
 myData$nutrition_or<-myData$nutrition_day_or + myData$nutrition_week_or + myData$nutrition_month_or
 myData$nutrition_or[myData$VEG_ORANGE=="DON'T KNOW" | myData$VEG_ORANGE=="REFUSED"] <- NA
 myData$nutrition_or[myData$VEG_ORANGE=="NEVER"] <- 0
+myData$nutrition_or[myData$nutrition_or>28] <- 28
 
 #The Analysis
 cor.test(myData$nutrition_or, myData$scores_sum)
@@ -287,6 +291,8 @@ myData$nutrition_ot<-NA
 myData$nutrition_ot<-myData$nutrition_day_ot + myData$nutrition_week_ot + myData$nutrition_month_ot
 myData$nutrition_ot[myData$VEG_OTHER=="DON'T KNOW" | myData$VEG_OTHER=="REFUSED"] <- NA
 myData$nutrition_ot[myData$VEG_OTHER=="NEVER"] <- 0
+myData$nutrition_ot[myData$nutrition_ot>28] <- 28
+
 
 #The Analysis
 cor.test(myData$nutrition_ot, myData$scores_sum)
@@ -298,7 +304,3 @@ TukeyHSD(myAnovaResults_income4)
 myAnovaResults_edu4 <- aov(nutrition_ot ~ education, data = myData) 
 summary(myAnovaResults_edu4)
 TukeyHSD(myAnovaResults_edu4)
-
-
-
-
